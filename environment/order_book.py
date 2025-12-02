@@ -3,7 +3,6 @@ class OrderBook:
         self.bids = []
         self.asks = []
         self.last_price = initial_price
-        self.price_history = [initial_price]
         self.trades = []
 
 
