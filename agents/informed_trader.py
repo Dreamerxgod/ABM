@@ -1,9 +1,8 @@
-# agents/informed_trader.py
 from agents.base_agent import Agent
-import random
+import config as cfg
 
 class InformedTrader(Agent):
-    def __init__(self, id, sensitivity=0.5, aggressiveness=0.1):
+    def __init__(self, id, sensitivity = cfg.INFORMED_TRADER_SENSITIVITY, aggressiveness = cfg.INFORMED_TRADER_AGGRESSIVENESS):
         super().__init__(id)
         self.sensitivity = sensitivity
         self.aggressiveness = aggressiveness
@@ -11,8 +10,16 @@ class InformedTrader(Agent):
     def act(self, market_state):
         mid = market_state['mid_price']
         news = market_state['news']
-        price_move = self.sensitivity * news
-        price = mid + price_move
-        qty = max(1, int(abs(news) / self.aggressiveness))
+        # Если новость отсутствует, агент не действует
+        if news == 0:
+            return []
+        price = mid * (1 + self.sensitivity * news)
         side = 'buy' if news > 0 else 'sell'
-        return [{'agent_id': self.id, 'side': side, 'price': price, 'qty': qty}]
+        qty = max(1, int(abs(news) / self.aggressiveness))
+        return [{
+            'agent_id': self.id,
+            'side': side,
+            'price': price,
+            'qty': qty
+        }]
+
