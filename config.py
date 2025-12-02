@@ -14,6 +14,8 @@ INFORMED_TRADER_SENSITIVITY = 0.5
 INFORMED_TRADER_AGGRESSIVENESS = 0.1
 FUNDAMENTAL_TRADER_AGGRESSIVENESS = 0.1
 
+
+
 # News settings
-NEWS_PROBABILITY = 0.2  # вероятность появления новости
-NEWS_VOLATILITY = 1.0   # амплитуда случайного процесса для новости
+NEWS_PROBABILITY = 0.2
+NEWS_VOLATILITY = 1.0
