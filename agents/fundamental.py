@@ -1,9 +1,8 @@
-# agents/fundamental_trader.py
 from agents.base_agent import Agent
-import random
+import config as cfg
 
 class FundamentalTrader(Agent):
-    def __init__(self, id, fundamental_price=100, aggressiveness=0.1):
+    def __init__(self, id, fundamental_price=100, aggressiveness=cfg.FUNDAMENTAL_TRADER_AGGRESSIVENESS):
         super().__init__(id)
         self.fundamental_price = fundamental_price
         self.aggressiveness = aggressiveness
