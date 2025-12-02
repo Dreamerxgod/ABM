@@ -4,6 +4,7 @@ class OrderBook:
         self.asks = []      # (price, qty, agent_id)
         self.last_price = initial_price
         self.trades = []
+        self.agents = {}
 
     def add_order(self, order):
         price = order['price']
@@ -24,27 +25,25 @@ class OrderBook:
     def match_orders(self):
         trades = []
 
-        # матчим, пока лучший покупатель >= лучшего продавца
         while self.bids and self.asks and self.bids[0][0] >= self.asks[0][0]:
             bid_price, bid_qty, bid_agent = self.bids[0]
             ask_price, ask_qty, ask_agent = self.asks[0]
 
-            # не торгуем сам с собой
             if bid_agent == ask_agent:
-                # Удаляем меньший ордер полностью (bid или ask)
                 if bid_qty <= ask_qty:
                     self.bids.pop(0)
-                    self.asks[0] = (ask_price, ask_qty - bid_qty, ask_agent)
-                    if self.asks[0][1] <= 0:
-                        self.asks.pop(0)
                 else:
                     self.bids[0] = (bid_price, bid_qty - ask_qty, bid_agent)
-                    self.asks.pop(0)
                 continue
 
-            # объём сделки
             trade_qty = min(bid_qty, ask_qty)
             trade_price = (bid_price + ask_price) / 2
+
+            # ОБНОВЛЯЕМ inventory ТОЛЬКО если агент market maker
+            for agent_id, delta in [(bid_agent, +trade_qty), (ask_agent, -trade_qty)]:
+                agent = self.agents.get(agent_id)
+                if agent and hasattr(agent, "current_inventory"):
+                    agent.current_inventory += delta
 
             trades.append({
                 'price': trade_price,
@@ -53,13 +52,12 @@ class OrderBook:
                 'seller': ask_agent
             })
 
-            # обновляем bid
+            # обновляем заявки
             if bid_qty > trade_qty:
                 self.bids[0] = (bid_price, bid_qty - trade_qty, bid_agent)
             else:
                 self.bids.pop(0)
 
-            # обновляем ask
             if ask_qty > trade_qty:
                 self.asks[0] = (ask_price, ask_qty - trade_qty, ask_agent)
             else:
