@@ -9,6 +9,9 @@ class FundamentalTrader(Agent):
 
     def act(self, market_state):
         mid = market_state['mid_price']
+        self.fundamental_price = market_state['fundamental_price']
+        print("[AGENT] sees F =", market_state["fundamental_price"])
+
         deviation = self.fundamental_price - mid  # если положительное — цена ниже фундаментала
         side = 'buy' if deviation > 0 else 'sell'
         price = mid + deviation * 0.5  # корректируем цену, чтобы немного подтолкнуть рынок
