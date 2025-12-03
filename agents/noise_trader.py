@@ -1,9 +1,10 @@
 from agents.base_agent import Agent
 from utils import random_utils as ru
+import config as cfg
 
 class NoiseTrader(Agent):
 
-    def __init__(self, id, noise_level=0.05):
+    def __init__(self, id, noise_level=cfg.NOISE_TRADER_NOISE_LEVEL):
         super().__init__(id)
         self.noise_level = noise_level
 
