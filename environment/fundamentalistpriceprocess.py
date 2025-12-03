@@ -14,6 +14,6 @@ class FundamentalPriceProcess:
 
         if self.counter >= self.step_interval:
             self.counter = 0
-            self.fundamental_price += random.gauss(self.drift, 1)
+            self.fundamental_price += random.gauss(self.drift, cfg.FUNDAMENTAL_SIGMA)
 
         return self.fundamental_price
