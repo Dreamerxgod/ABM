@@ -7,6 +7,7 @@ from environment.news_process import NewsProcess
 import config as cfg
 from utils import file_io
 from environment.market import Market
+from agents.trend_trader import TrendTrader
 
 
 def main():
@@ -27,10 +28,21 @@ def main():
             aggressiveness=cfg.INFORMED_TRADER_AGGRESSIVENESS
         ))
 
+    for i in range(cfg.NUM_TREND_TRADERS):
+        agents.append(TrendTrader(
+            id=cfg.NUM_NOISE_TRADERS
+               + cfg.NUM_MARKET_MAKERS
+               + cfg.NUM_INFORMED_TRADERS
+               + i + 1
+        ))
+
     for i in range(cfg.NUM_FUNDAMENTAL_TRADERS):
         agents.append(FundamentalTrader(
-            id=cfg.NUM_NOISE_TRADERS + cfg.NUM_MARKET_MAKERS
-               + cfg.NUM_INFORMED_TRADERS + i + 1,
+            id=cfg.NUM_NOISE_TRADERS
+               + cfg.NUM_MARKET_MAKERS
+               + cfg.NUM_INFORMED_TRADERS
+               + cfg.NUM_TREND_TRADERS
+               + i + 1,
             fundamental_price=cfg.INITIAL_PRICE,
             aggressiveness=cfg.FUNDAMENTAL_TRADER_AGGRESSIVENESS
         ))
