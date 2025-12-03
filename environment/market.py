@@ -14,6 +14,10 @@ class Market:
         self.news = 0.0
         self.logger = Logger()
 
+        self.reversion = 0.9  # насколько mid_price тянет к тренду
+        self.trend_strength = 0.05  # сила общего тренда вверх
+        self.noise_sigma = 0.3  # волатильность свободного шума
+
     def update_news(self):
         self.news_process.step()
         self.news = self.news_process.get_news()
@@ -34,7 +38,7 @@ class Market:
         for agent in agents:
             orders = agent.act(state)
             for o in orders:
-                self.logger.log_order(t, o)
+                self.logger.log_order(t, o, agent=agent)
                 trades += self.order_book.add_order(o)
 
         self.mid_price = self.order_book.get_mid_price(last_price=self.mid_price)
