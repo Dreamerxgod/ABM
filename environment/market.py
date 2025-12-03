@@ -37,7 +37,6 @@ class Market:
     def step(self, t, agents):
         self.update_news()
         self.fundamental_price = self.fundamental_process.step()
-        print("[MARKET] FUND AFTER STEP =", self.fundamental_price)
 
         self.logger.log(f"[FUNDAMENTAL t={t}] F={self.fundamental_price:.2f}")
         state = self.get_state()

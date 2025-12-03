@@ -10,7 +10,6 @@ class FundamentalPriceProcess:
 
     def step(self):
         self.counter += 1
-        print("[FPP] counter =", self.counter, "fund =", self.fundamental_price)
 
         if self.counter >= self.step_interval:
             self.counter = 0
