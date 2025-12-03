@@ -40,11 +40,14 @@ class Market:
 
         self.logger.log(f"[FUNDAMENTAL t={t}] F={self.fundamental_price:.2f}")
         state = self.get_state()
-
         self.logger.log_news(t, self.news)
 
         trades = []
         for agent in agents:
+            # если у агента есть inventory — считаем его маркетмейкером и снимаем старые заявки
+            if hasattr(agent, "inventory"):
+                self.order_book.cancel_orders_for_agent(agent.id)
+
             orders = agent.act(state)
             for o in orders:
                 self.logger.log_order(t, o, agent=agent)

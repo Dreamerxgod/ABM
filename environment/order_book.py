@@ -6,6 +6,11 @@ class OrderBook:
         self.trades = []
         self.agents = {}
 
+    def cancel_orders_for_agent(self, agent_id):
+        """Удаляем все заявки этого агента из стакана"""
+        self.bids = [b for b in self.bids if b[2] != agent_id]
+        self.asks = [a for a in self.asks if a[2] != agent_id]
+
     def add_order(self, order):
         price = order['price']
         qty = order['qty']
@@ -42,8 +47,8 @@ class OrderBook:
             # ОБНОВЛЯЕМ inventory ТОЛЬКО если агент market maker
             for agent_id, delta in [(bid_agent, +trade_qty), (ask_agent, -trade_qty)]:
                 agent = self.agents.get(agent_id)
-                if agent and hasattr(agent, "current_inventory"):
-                    agent.current_inventory += delta
+                if agent and hasattr(agent, "inventory"):
+                    agent.inventory += delta
 
             trades.append({
                 'price': trade_price,

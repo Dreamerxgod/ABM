@@ -53,7 +53,7 @@ class Logger:
 
     def log_order(self, t, order, agent=None):
         trader_type = agent.__class__.__name__
-        inventory = getattr(agent, 'current_inventory', None)
+        inventory = getattr(agent, 'inventory', None)
         inv_str = f" inv={inventory}" if inventory is not None else ""
 
         self.log(f"[ORDER t={t}] "
