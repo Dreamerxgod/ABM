@@ -51,7 +51,11 @@ class Logger:
     def log_mid_price(self, t, mid):
         self.log(f"[MID t={t}] mid_price={mid:.2f}")
 
-    def log_order(self, t, order):
+    def log_order(self, t, order, agent=None):
+        trader_type = agent.__class__.__name__
+        inventory = getattr(agent, 'current_inventory', None)
+        inv_str = f" inv={inventory}" if inventory is not None else ""
+
         self.log(f"[ORDER t={t}] "
-                 f"{order['agent_id']} {order['side']} "
-                 f"p={order['price']:.2f} qty={order['qty']}")
+                 f"{trader_type}({order['agent_id']}) {order['side']} "
+                 f"p={order['price']:.2f} qty={order['qty']}{inv_str}")
