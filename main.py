@@ -18,8 +18,13 @@ def main():
                                   noise_level=cfg.NOISE_TRADER_NOISE_LEVEL))
 
     for i in range(cfg.NUM_MARKET_MAKERS):
-        agents.append(MarketMaker(id=cfg.NUM_NOISE_TRADERS + i + 1,
-                                  spread=cfg.MARKET_MAKER_SPREAD))
+        agents.append(MarketMaker(
+            id=cfg.NUM_NOISE_TRADERS + i + 1,
+            base_spread=cfg.MM_BASE_SPREAD,
+            inventory_risk_aversion=cfg.MM_INV_RISK,
+            max_inventory=cfg.MM_MAX_INVENTORY,
+            base_size=cfg.MM_BASE_SIZE
+        ))
 
     for i in range(cfg.NUM_INFORMED_TRADERS):
         agents.append(InformedTrader(

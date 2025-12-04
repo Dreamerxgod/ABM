@@ -1,87 +1,63 @@
 from agents.base_agent import Agent
 import config as cfg
-from utils import random_utils as ru
-
 
 class MarketMaker(Agent):
-    def __init__(self, id,
-                 spread=cfg.MARKET_MAKER_SPREAD,
-                 max_inventory=50,
-                 mean_reversion_speed=0.3,
-                 max_step_frac=0.3):
+    def __init__(
+        self,
+        id,
+        base_spread=cfg.MM_BASE_SPREAD,
+        inventory_risk_aversion=cfg.MM_INV_RISK,
+        max_inventory=cfg.MM_MAX_INVENTORY,
+        base_size=cfg.MM_BASE_SIZE
+    ):
         super().__init__(id)
-        self.spread = spread
-        self.max_inventory = max_inventory
         self.inventory = 0
+        self.max_inventory = max_inventory
+        self.base_spread = base_spread
+        self.inventory_risk_aversion = inventory_risk_aversion
+        self.base_size = base_size
 
-        self.mean_reversion_speed = mean_reversion_speed
-        self.max_step_frac = max_step_frac
+    def compute_spread(self):
+        inv_penalty = self.inventory_risk_aversion * abs(self.inventory) / self.max_inventory
+        return self.base_spread * (1 + inv_penalty)
 
-    def _compute_quantities(self):
-        target_inventory = 0
+    def compute_sizes(self):
+        inv_frac = self.inventory / self.max_inventory
+        bid_size = self.base_size * (1 - inv_frac)
+        ask_size = self.base_size * (1 + inv_frac)
 
-        # желательное изменение инвентаря
-        desired_change = self.mean_reversion_speed * (target_inventory - self.inventory)
+        max_buy = self.max_inventory - self.inventory
+        max_sell = self.inventory + self.max_inventory
 
-        max_step = int(self.max_inventory * self.max_step_frac)
-        if max_step < 1:
-            max_step = 1
+        bid_size = max(0, min(int(bid_size), max_buy))
+        ask_size = max(0, min(int(ask_size), max_sell))
 
-        desired_change = max(-max_step, min(max_step, int(round(desired_change))))
-
-        # чуть шуму
-        noise = ru.randint(-1, 1)
-        desired_change += noise
-
-        # сколько вообще можем ещё купить/продать с учётом лимитов
-        capacity_long = max(0, self.max_inventory - self.inventory)      # запас до +max_inventory
-        capacity_short = max(0, self.inventory + self.max_inventory)     # запас до -max_inventory (по модулю)
-
-        qty_bid = 0
-        qty_ask = 0
-
-        if desired_change > 0:
-            qty_bid = min(desired_change, capacity_long)
-            small_sell = max(0, ru.randint(0, 2))
-            qty_ask = min(small_sell, capacity_short)
-        elif desired_change < 0:
-            qty_ask = min(-desired_change, capacity_short)
-            small_buy = max(0, ru.randint(0, 2))
-            qty_bid = min(small_buy, capacity_long)
-        else:
-            base = ru.randint(1, 3)
-            qty_bid = min(base, capacity_long)
-            qty_ask = min(base, capacity_short)
-
-        return qty_bid, qty_ask
+        return bid_size, ask_size
 
     def act(self, market_state):
-        mid = market_state['mid_price']
-
-        bid_price = mid * (1 - self.spread / 2)
-        ask_price = mid * (1 + self.spread / 2)
-
-        qty_bid, qty_ask = self._compute_quantities()
+        mid = market_state["mid_price"]
+        spread = self.compute_spread()
+        bid_price = mid - spread / 2
+        ask_price = mid + spread / 2
+        bid_qty, ask_qty = self.compute_sizes()
 
         orders = []
 
-        # ограничения на покупку
-        if self.inventory < self.max_inventory and qty_bid > 0:
+        if bid_qty > 0:
             orders.append({
                 'agent_id': self.id,
                 'side': 'buy',
                 'price': bid_price,
-                'qty': min(qty_bid, self.max_inventory - self.inventory),
+                'qty': bid_qty,
                 'type': 'limit'
             })
 
-        # ограничения на продажу
-        if self.inventory > -self.max_inventory and qty_ask > 0:
+        if ask_qty > 0:
             orders.append({
                 'agent_id': self.id,
                 'side': 'sell',
                 'price': ask_price,
-                'qty': min(qty_ask, self.inventory + self.max_inventory),
+                'qty': ask_qty,
                 'type': 'limit'
             })
 
