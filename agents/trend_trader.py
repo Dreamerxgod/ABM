@@ -1,13 +1,14 @@
 from agents.base_agent import Agent
 import numpy as np
 from collections import deque
+import config as cfg
 
 class TrendTrader(Agent):
     def __init__(self, id,
-                 lookback=20,
-                 threshold=0.2,
-                 k=0.01,
-                 max_qty=20):
+                 lookback=cfg.TREND_TRADER_LOOKBACK,
+                 threshold=cfg.TREND_TRADER_THRESHOLD,
+                 k=cfg.TREND_TRADER_AGGRESSIVENESS,
+                 max_qty=cfg.TREND_TRADER_MAX_QTY):
         super().__init__(id)
         self.lookback = lookback
         self.threshold = threshold
@@ -48,10 +49,12 @@ class TrendTrader(Agent):
         if atr is None:
             return []
 
-
         side = 'buy' if trend > 0 else 'sell'
-        qty = max(1, int(self.max_qty * (1 - np.exp(-abs(trend)/self.threshold))))
 
+        strength = abs(trend) / (self.k * self.threshold)
+        strength = max(0.0, min(1.0, strength))
+
+        qty = 1 + int(strength * (self.max_qty - 1))
 
         spread = mid * 0.05
         price = mid + (spread / 2 if side == 'buy' else -spread / 2)
@@ -61,5 +64,5 @@ class TrendTrader(Agent):
             'side': side,
             'price': price,
             'qty': qty,
-            'type': 'limit'
+            'type': 'limit',
         }]
