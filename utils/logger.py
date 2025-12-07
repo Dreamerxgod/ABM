@@ -65,3 +65,30 @@ class Logger:
             f"{trader_type}({order['agent_id']}) {order['side']} "
             f"p={order['price']:.2f} qty={order['qty']}{inv_str}{trend_str}"
         )
+
+    def log_option_trade(self, t, trade):
+        with open(self.trades_file.replace(".csv", "_options.csv"), "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                t,
+                trade.get("price", 0),
+                trade.get("qty", 0),
+                trade.get("buyer", ""),
+                trade.get("seller", ""),
+                trade.get("instrument", ""),  # call/put
+                trade.get("strike", "")
+            ])
+        if self.enable_console:
+            print(f"[OPTION TRADE t={t}] "
+                  f"{trade.get('buyer')} -> {trade.get('seller')} | "
+                  f"{trade.get('instrument')} K={trade.get('strike')} "
+                  f"qty={trade.get('qty')} price={trade.get('price'):.2f}")
+
+    # --- Новый метод для опционных ордеров ---
+    def log_option_order(self, t, order, agent=None):
+        trader_type = agent.__class__.__name__ if agent else "Unknown"
+        self.log(
+            f"[OPTION ORDER t={t}] {trader_type}({order['agent_id']}) "
+            f"{order['side']} p={order['price']:.2f} qty={order['qty']} "
+            f"strike={order.get('strike')} type={order.get('type')}"
+        )

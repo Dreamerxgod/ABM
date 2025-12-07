@@ -10,7 +10,7 @@ NUM_FUNDAMENTAL_TRADERS = 5
 
 # Trend trader settings
 NUM_TREND_TRADERS = 2
-TREND_TRADER_LOOKBACK = 20
+TREND_TRADER_LOOKBACK = 50
 TREND_TRADER_THRESHOLD = 0.05 #
 TREND_TRADER_AGGRESSIVENESS = 3.0 #
 TREND_TRADER_MAX_QTY = 5
@@ -32,3 +32,15 @@ MM_VOL_SENS = 0.4
 # News settings
 NEWS_PROBABILITY = 0.2
 NEWS_VOLATILITY = 1.5
+
+
+NUM_OPTION_MARKET_MAKERS = 1
+NUM_OPTION_NOISE_TRADERS = 2
+NUM_OPTION_ARB = 2
+OPTION_STRIKES = [90, 100, 110] # простой набор страйков
+OPTION_TAU = 30/252.0 # время до экспирации в годах (30 торговых дней)
+OPTION_R = 0.00 # риск‑фри
+OPTION_Q = 0.0 # дивидендная доходность
+OPTION_VOL = 0.2 # базовая подразумеваемая волатильность
+OPTION_SPREAD_FACTOR = 0.02 # доля от теоретической цены для спрэдов
+OPTION_ARB_THRESHOLD = 0.05 # порог арбитража (в долях от теор. цены)
