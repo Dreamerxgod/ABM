@@ -46,19 +46,21 @@ class MarketMaker(Agent):
         if bid_qty > 0:
             orders.append({
                 'agent_id': self.id,
+                'instrument': 'spot',
+                'order_type': 'limit',
                 'side': 'buy',
-                'price': bid_price,
-                'qty': bid_qty,
-                'type': 'limit'
+                'price': float(bid_price),
+                'qty': int(bid_qty),
             })
 
         if ask_qty > 0:
             orders.append({
                 'agent_id': self.id,
+                'instrument': 'spot',
+                'order_type': 'limit',
                 'side': 'sell',
-                'price': ask_price,
-                'qty': ask_qty,
-                'type': 'limit'
+                'price': float(ask_price),
+                'qty': int(ask_qty),
             })
 
         return orders

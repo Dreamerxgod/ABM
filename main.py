@@ -62,6 +62,9 @@ def main():
 
     logger = Logger(enable_console=True)
 
+    market = Market(initial_price=cfg.INITIAL_PRICE)
+    market.logger = logger
+
 
     options_market = OptionsMarket(
         strikes=cfg.OPTION_STRIKES,
@@ -96,14 +99,12 @@ def main():
     option_price_history_call = []
     option_price_history_put = []
 
-    logger = Logger(enable_console=True)
+    #logger = Logger(enable_console=True)
 
-
-    WARMUP_STEPS = 50
-    for t in range(WARMUP_STEPS):
+    for t in range(cfg.WARMUP_STEPS):
         market.step(t, agents)
 
-    for t in range(cfg.NUM_STEPS):
+    for t in range(cfg.WARMUP_STEPS, cfg.WARMUP_STEPS + cfg.NUM_STEPS):
         step_trades = market.step(t, agents)
 
         # лог/дебаг

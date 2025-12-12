@@ -21,6 +21,15 @@ class OptionsNoiseTrader(Agent):
 
             qty = ru.randint(1, self.max_qty)
             side = ru.choice(['buy', 'sell'])
-            return [{'agent_id': self.id, 'side': side, 'price': price, 'qty': qty, 'strike': K, 'type': option_type}]
+            return [{
+                'agent_id': self.id,
+                'instrument': 'option',
+                'order_type': 'limit',
+                'side': side,
+                'price': float(price),
+                'qty': int(qty),
+                'strike': K,
+                'option_type': option_type
+            }]
 
         return []

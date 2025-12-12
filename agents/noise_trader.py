@@ -19,4 +19,12 @@ class NoiseTrader(Agent):
         qty = ru.randint(1, 5)
         side = ru.choice(['buy', 'sell'])
 
-        return [{'agent_id': self.id, 'side': side, 'price': price, 'qty': qty}]
+        return [{
+            'agent_id': self.id,
+            'instrument': 'spot',
+            'order_type': 'limit',
+            'side': side,
+            'price': float(price),
+            'qty': int(qty),
+        }]
+

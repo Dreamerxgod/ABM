@@ -11,15 +11,20 @@ class InformedTrader(Agent):
     def act(self, market_state):
         mid = market_state['mid_price']
         news = market_state['news']
+        news = max(-1.0, min(1.0, float(news)))  # clip
         if news == 0:
             return []
+
         price = mid * (1 + self.sensitivity * news)
         side = 'buy' if news > 0 else 'sell'
         qty = max(1, int(abs(news) / self.aggressiveness))
         return [{
             'agent_id': self.id,
+            'instrument': 'spot',
+            'order_type': 'limit',
             'side': side,
-            'price': price,
-            'qty': qty
+            'price': float(price),
+            'qty': int(qty),
         }]
+
 

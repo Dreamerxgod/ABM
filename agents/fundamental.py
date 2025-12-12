@@ -21,4 +21,12 @@ class FundamentalTrader(Agent):
         side = 'buy' if deviation > 0 else 'sell'
         price = mid + deviation * 0.5
         qty = max(1, int(abs(deviation) / self.aggressiveness))
-        return [{'agent_id': self.id, 'side': side, 'price': price, 'qty': qty}]
+        return [{
+            'agent_id': self.id,
+            'instrument': 'spot',
+            'order_type': 'limit',
+            'side': side,
+            'price': float(price),
+            'qty': int(qty),
+        }]
+

@@ -59,12 +59,19 @@ class OptionsMarket:
                                 'mid_prices_put': self.mid_prices_put})
             for o in orders:
                 K = o.get('strike')
-                opt_type = o.get('type', 'call')  # ожидаем 'call' или 'put'
+                opt_type = o.get('option_type', 'call')  # ожидаем 'call' или 'put'
                 if K not in self.order_books or opt_type not in ['call', 'put']:
                     continue
                 if hasattr(self, 'logger') and self.logger:
                     self.logger.log_option_order(t, o, agent=agent)
-                trades += self.order_books[K][opt_type].add_order(o)
+
+                new_trades = self.order_books[K][opt_type].add_order(o)
+                for tr in new_trades:
+                    tr['time'] = t
+                    tr['instrument'] = 'option'
+                    tr['strike'] = K
+                    tr['option_type'] = opt_type
+                trades += new_trades
 
         for K in self.strikes:
             self.mid_prices_call[K] = self.order_books[K]['call'].get_mid_price(self.mid_prices_call[K])
@@ -72,9 +79,5 @@ class OptionsMarket:
 
             self.mid_prices_call[K] = max(self.mid_prices_call[K], 0.0001)
             self.mid_prices_put[K] = max(self.mid_prices_put[K], 0.0001)
-
-        for tr in trades:
-            tr['time'] = t
-            tr['instrument'] = tr.get('type', 'CALL').upper()
 
         return trades

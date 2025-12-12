@@ -56,13 +56,15 @@ class TrendTrader(Agent):
 
         qty = 1 + int(strength * (self.max_qty - 1))
 
-        spread = mid * 0.05
-        price = mid + (spread / 2 if side == 'buy' else -spread / 2)
+        spread = max(mid * 0.002, 2 * atr)
+        price = mid - spread / 2 if side == 'buy' else mid + spread / 2
 
         return [{
             'agent_id': self.id,
+            'instrument': 'spot',
+            'order_type': 'limit',
             'side': side,
-            'price': price,
-            'qty': qty,
-            'type': 'limit',
+            'price': float(price),
+            'qty': int(qty),
         }]
+
