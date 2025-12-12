@@ -1,6 +1,7 @@
 from agents.base_agent import Agent
 import config as cfg
 
+
 class InformedTrader(Agent):
     def __init__(self, id, sensitivity = cfg.INFORMED_TRADER_SENSITIVITY, aggressiveness = cfg.INFORMED_TRADER_AGGRESSIVENESS):
         super().__init__(id)
@@ -10,7 +11,6 @@ class InformedTrader(Agent):
     def act(self, market_state):
         mid = market_state['mid_price']
         news = market_state['news']
-        # Если новость отсутствует, агент не действует
         if news == 0:
             return []
         price = mid * (1 + self.sensitivity * news)
