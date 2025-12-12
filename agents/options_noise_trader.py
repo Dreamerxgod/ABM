@@ -10,11 +10,17 @@ class OptionsNoiseTrader(Agent):
     def act(self, market_state):
         S = market_state['spot']
         strikes = market_state['strikes']
+
         if ru.choice([True, False]):
             K = ru.choice(strikes)
-            # Цена немного копируется от текущ spot-theoretical
-            price = market_state['mid_prices'].get(K, 1.0) * (1 + ru.uniform(-self.noise, self.noise))
+            option_type = ru.choice(['call', 'put'])  # выбираем тип опциона
+            if option_type == 'call':
+                price = market_state['mid_prices_call'].get(K, 1.0) * (1 + ru.uniform(-self.noise, self.noise))
+            else:
+                price = market_state['mid_prices_put'].get(K, 1.0) * (1 + ru.uniform(-self.noise, self.noise))
+
             qty = ru.randint(1, self.max_qty)
             side = ru.choice(['buy', 'sell'])
-            return [{'agent_id': self.id, 'side': side, 'price': price, 'qty': qty, 'strike': K}]
+            return [{'agent_id': self.id, 'side': side, 'price': price, 'qty': qty, 'strike': K, 'type': option_type}]
+
         return []
