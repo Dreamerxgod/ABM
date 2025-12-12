@@ -7,7 +7,6 @@ class OrderBook:
         self.agents = {}
 
     def cancel_orders_for_agent(self, agent_id):
-        """Удаляем все заявки этого агента из стакана"""
         self.bids = [b for b in self.bids if b[2] != agent_id]
         self.asks = [a for a in self.asks if a[2] != agent_id]
 
@@ -17,11 +16,9 @@ class OrderBook:
         agent = order['agent_id']
 
         if order['side'] == 'buy':
-            # сортируем по убыванию цены
             self.bids.append((price, qty, agent))
             self.bids.sort(key=lambda x: x[0], reverse=True)
         else:
-            # сортируем по возрастанию цены
             self.asks.append((price, qty, agent))
             self.asks.sort(key=lambda x: x[0])
 
@@ -72,9 +69,8 @@ class OrderBook:
         return trades
 
     def get_mid_price(self, last_price=100):
-        """Корректный mid-price"""
         if self.bids and self.asks:
-            best_bid = self.bids[0][0]  # уже отсортировано
+            best_bid = self.bids[0][0]
             best_ask = self.asks[0][0]
             mid = (best_bid + best_ask) / 2
 
@@ -87,5 +83,4 @@ class OrderBook:
         else:
             mid = last_price
 
-        # минимальная цена — просто страховка
         return max(mid, 1.0)

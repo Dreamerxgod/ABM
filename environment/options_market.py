@@ -3,55 +3,78 @@ from utils.bs_utils import bs_price, bs_delta
 import config as cfg
 
 class OptionsMarket:
-    def __init__(self, strikes=None, tau=cfg.OPTION_TAU, r=cfg.OPTION_R, q=cfg.OPTION_Q, vol=cfg.OPTION_VOL):
+    def __init__(self, strikes=None, tau=cfg.OPTION_TAU, r=cfg.OPTION_R, q=cfg.OPTION_Q, vol=cfg.OPTION_VOL, option_type = 'call'):
         self.strikes = strikes or cfg.OPTION_STRIKES
         self.tau = tau
         self.r = r
         self.q = q
         self.vol = vol
-        # Для простоты — один инструмент (например, call) на каждый страйк
-        self.order_books = {K: OptionsOrderBook(initial_price=bs_price(cfg.INITIAL_PRICE, K, self.r, self.q, self.vol, self.tau)) for K in self.strikes}
-        self.mid_prices = {K: self.order_books[K].last_price for K in self.strikes}
+        self.option_type = option_type
+        self.logger = None
+
+        self.order_books = {
+            K: {
+                'call': OptionsOrderBook(
+                    initial_price=bs_price(cfg.INITIAL_PRICE, K, self.r, self.q, self.vol, self.tau, option_type='call')
+                ),
+                'put': OptionsOrderBook(
+                    initial_price=bs_price(cfg.INITIAL_PRICE, K, self.r, self.q, self.vol, self.tau, option_type='put')
+                )
+            }
+            for K in self.strikes
+        }
+        self.mid_prices_call = {K: self.order_books[K]['call'].last_price for K in self.strikes}
+        self.mid_prices_put = {K: self.order_books[K]['put'].last_price for K in self.strikes}
         self.agents = {}
 
     def set_agents(self, agents):
-        # agents — список агентов для опционного рынка
         self.agents = {a.id: a for a in agents}
-        for ob in self.order_books.values():
-            ob.agents = self.agents
+        for K_books in self.order_books.values():  # K_books = {'call': ..., 'put': ...}
+            for ob in K_books.values():  # ob = OptionsOrderBook
+                ob.agents = self.agents
 
-    def theoretical_price(self, S, K):
-        return bs_price(S, K, self.r, self.q, self.vol, self.tau, option_type='call')
+    def theoretical_price(self, S, K, option_type='call'):
+        return bs_price(S, K, self.r, self.q, self.vol, self.tau, option_type=option_type)
 
     def step(self, t, S, agents):
-        """S — базовый (spot) mid_price. agents — список опционных агентов"""
         trades = []
         # пересчитать теоретические цены и обновить book.mid (market makers будут размещать ордера в act)
         for K in self.strikes:
-            theo = self.theoretical_price(S, K)
-            # если в стакане нет ордеров — обновим last_price
-            ob = self.order_books[K]
-            ob.last_price = max(theo, 0.0001)
+            for opt_type in ['call', 'put']:
+                theo = self.theoretical_price(S, K, option_type=opt_type)
+                ob = self.order_books[K][opt_type]
+                ob.last_price = max(theo, 0.0001)
 
         # выполнить действия агентов
         for agent in agents:
             if hasattr(agent, 'inventory'):
                 # убрать старые заявки
-                for ob in self.order_books.values():
-                    ob.cancel_orders_for_agent(agent.id)
-            orders = agent.act({'spot': S, 'tau': self.tau, 'r': self.r, 'q': self.q, 'vol': self.vol, 'strikes': self.strikes, 'mid_prices': self.mid_prices})
+                for K_books in self.order_books.values():
+                    for ob in K_books.values():
+                        ob.cancel_orders_for_agent(agent.id)
+
+            orders = agent.act({'spot': S, 'tau': self.tau, 'r': self.r, 'q': self.q, 'vol': self.vol,
+                                'strikes': self.strikes,
+                                'mid_prices_call': self.mid_prices_call,
+                                'mid_prices_put': self.mid_prices_put})
             for o in orders:
                 K = o.get('strike')
-                if K not in self.order_books:
+                opt_type = o.get('type', 'call')  # ожидаем 'call' или 'put'
+                if K not in self.order_books or opt_type not in ['call', 'put']:
                     continue
-                trades += self.order_books[K].add_order(o)
+                if hasattr(self, 'logger') and self.logger:
+                    self.logger.log_option_order(t, o, agent=agent)
+                trades += self.order_books[K][opt_type].add_order(o)
 
-        # обновить mid_prices
-        for K, ob in self.order_books.items():
-            self.mid_prices[K] = ob.get_mid_price(last_price=ob.last_price)
+        for K in self.strikes:
+            self.mid_prices_call[K] = self.order_books[K]['call'].get_mid_price(self.mid_prices_call[K])
+            self.mid_prices_put[K] = self.order_books[K]['put'].get_mid_price(self.mid_prices_put[K])
 
-        # добавить время в сделки
+            self.mid_prices_call[K] = max(self.mid_prices_call[K], 0.0001)
+            self.mid_prices_put[K] = max(self.mid_prices_put[K], 0.0001)
+
         for tr in trades:
             tr['time'] = t
-            tr['instrument'] = 'CALL'
+            tr['instrument'] = tr.get('type', 'CALL').upper()
+
         return trades

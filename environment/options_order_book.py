@@ -40,7 +40,7 @@ class OptionsOrderBook:
                 continue
 
             trade_qty = min(bid_qty, ask_qty)
-            trade_price = (bid_price + ask_price) / 2
+            trade_price = ask_price
 
             trades.append({
                 'price': trade_price,
@@ -58,6 +58,8 @@ class OptionsOrderBook:
                 self.asks[0] = (ask_price, ask_qty - trade_qty, ask_agent)
             else:
                 self.asks.pop(0)
+
+            self.last_price = trade_price
 
         # после цикла добавляем все сделки в общий список
         self.trades.extend(trades)
