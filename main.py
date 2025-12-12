@@ -60,6 +60,8 @@ def main():
     market = Market(initial_price=cfg.INITIAL_PRICE)
     market.set_agents(agents)
 
+    logger = Logger(enable_console=True)
+
 
     options_market = OptionsMarket(
         strikes=cfg.OPTION_STRIKES,
@@ -68,6 +70,7 @@ def main():
         q=cfg.OPTION_Q,
         vol=cfg.OPTION_VOL
     )
+    options_market.logger = logger
 
     options_agents = []
     for i in range(cfg.NUM_OPTION_MARKET_MAKERS):
@@ -90,9 +93,10 @@ def main():
     price_history = []
     trades = []
     option_trades = []
-    option_price_history = []
+    option_price_history_call = []
+    option_price_history_put = []
 
-
+    logger = Logger(enable_console=True)
 
 
     WARMUP_STEPS = 50
@@ -111,10 +115,8 @@ def main():
             tr['time'] = t
         trades.extend(step_trades)
 
+
         price_history.append(market.mid_price)
-
-
-
         S = market.mid_price
 
         opt_trades = options_market.step(
@@ -122,30 +124,23 @@ def main():
             S=S,
             agents=options_agents
         )
-        # собираем mid_prices для всех страйков
-        option_price_history.append(options_market.mid_prices.copy())
+
+        option_price_history_call.append(options_market.mid_prices_call.copy())
+        option_price_history_put.append(options_market.mid_prices_put.copy())
 
         option_trades.extend(opt_trades)
-
-        logger = Logger(enable_console=True)  # создаём объект в начале main()
 
         # затем внутри цикла:
         for tr in opt_trades:
             logger.log_option_trade(t, tr)  # экземпляр logger, а не класс
 
-        for agent in options_agents:
-            orders = agent.act({
-                'spot': S, 'tau': cfg.OPTION_TAU, 'r': cfg.OPTION_R, 'q': cfg.OPTION_Q,
-                'vol': cfg.OPTION_VOL, 'strikes': cfg.OPTION_STRIKES,
-                'mid_prices': options_market.mid_prices
-            })
-            for o in orders:
-                logger.log_order(t, o, agent)  # экземпляр logger
+
 
     # график
     plot_price_series(price_history)
     # график опционов
-    plot_options_prices(option_price_history, strikes=cfg.OPTION_STRIKES, title='Options Prices Evolution')
+    plot_options_prices(option_price_history_call, strikes=cfg.OPTION_STRIKES, title='Call Options Prices')
+    plot_options_prices(option_price_history_put, strikes=cfg.OPTION_STRIKES, title='Put Options Prices')
 
     # CSV
     file_io.save_price_history('price_history.csv', price_history)
