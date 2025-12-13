@@ -14,6 +14,12 @@ from agents.options_market_maker import OptionsMarketMaker
 from agents.options_noise_trader import OptionsNoiseTrader
 from agents.options_arbitrageur import OptionsArbitrageur
 from utils.logger import Logger
+from utils.vol_utils import rolling_mean, realised_vol_last
+from utils.plotting import plot_realised_vol
+from utils import bs_utils
+from utils import plotting
+from utils.bs_utils import print_iv_rv_summary
+
 
 def main():
     agents = []
@@ -62,9 +68,6 @@ def main():
 
     logger = Logger(enable_console=True)
 
-    market = Market(initial_price=cfg.INITIAL_PRICE)
-    market.logger = logger
-
 
     options_market = OptionsMarket(
         strikes=cfg.OPTION_STRIKES,
@@ -98,6 +101,9 @@ def main():
     option_trades = []
     option_price_history_call = []
     option_price_history_put = []
+    rv_history = []
+    iv_history_call = []
+    iv_history_put = []
 
     #logger = Logger(enable_console=True)
 
@@ -115,25 +121,62 @@ def main():
             tr['time'] = t
         trades.extend(step_trades)
 
-
-        price_history.append(market.mid_price)
         S = market.mid_price
+        price_history.append(S)
+
+        rv = realised_vol_last(price_history, lookback=200, annualization=252)
+        rv_history.append(rv)
+
+        vol_for_options = rv if rv is not None else cfg.OPTION_VOL
 
         opt_trades = options_market.step(
             t=t,
             S=S,
-            agents=options_agents
+            agents=options_agents,
+            vol=vol_for_options
         )
 
         option_price_history_call.append(options_market.mid_prices_call.copy())
         option_price_history_put.append(options_market.mid_prices_put.copy())
+
+        iv_step_call = {}
+        iv_step_put = {}
+
+        for K in cfg.OPTION_STRIKES:
+            C_mid = options_market.mid_prices_call.get(K)
+            P_mid = options_market.mid_prices_put.get(K)
+
+            iv_step_call[K] = bs_utils.implied_volatility(
+                price=C_mid, S=S, K=K,
+                r=cfg.OPTION_R, q=cfg.OPTION_Q, T=cfg.OPTION_TAU,
+                option_type='call'
+            )
+            iv_step_put[K] = bs_utils.implied_volatility(
+                price=P_mid, S=S, K=K,
+                r=cfg.OPTION_R, q=cfg.OPTION_Q, T=cfg.OPTION_TAU,
+                option_type='put'
+            )
+
+        iv_history_call.append(iv_step_call)
+        iv_history_put.append(iv_step_put)
 
         option_trades.extend(opt_trades)
 
         for tr in opt_trades:
             logger.log_option_trade(t, tr)
 
+    print_iv_rv_summary(
+        rv_history=rv_history,
+        iv_history_call=iv_history_call,
+        iv_history_put=iv_history_put,
+        strikes=cfg.OPTION_STRIKES
+    )
 
+    rv_avg = rolling_mean(rv_history, window=200)
+    plot_realised_vol(rv_history, rv_avg, title="Spot realised vol + rolling average")
+
+    plotting.plot_implied_vol_series(iv_history_call, strikes=cfg.OPTION_STRIKES, title="Implied Vol (Calls)")
+    plotting.plot_implied_vol_series(iv_history_put, strikes=cfg.OPTION_STRIKES, title="Implied Vol (Puts)")
 
     plot_price_series(price_history)
     plot_options_prices(option_price_history_call, strikes=cfg.OPTION_STRIKES, title='Call Options Prices')

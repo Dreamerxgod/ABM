@@ -36,9 +36,13 @@ class OptionsMarket:
     def theoretical_price(self, S, K, option_type='call'):
         return bs_price(S, K, self.r, self.q, self.vol, self.tau, option_type=option_type)
 
-    def step(self, t, S, agents):
+    def step(self, t, S, agents, vol=None):
         trades = []
-        # пересчитать теоретические цены и обновить book.mid (market makers будут размещать ордера в act)
+        if vol is not None:
+            vol = float(vol)
+            self.vol = vol
+
+            # пересчитать теоретические цены и обновить book.mid (market makers будут размещать ордера в act)
         for K in self.strikes:
             for opt_type in ['call', 'put']:
                 theo = self.theoretical_price(S, K, option_type=opt_type)
@@ -50,10 +54,16 @@ class OptionsMarket:
                 for ob in K_books.values():
                     ob.cancel_orders_for_agent(agent.id)
 
-            orders = agent.act({'spot': S, 'tau': self.tau, 'r': self.r, 'q': self.q, 'vol': self.vol,
-                                'strikes': self.strikes,
-                                'mid_prices_call': self.mid_prices_call,
-                                'mid_prices_put': self.mid_prices_put})
+            orders = agent.act({
+                'spot': S,
+                'tau': self.tau,
+                'r': self.r,
+                'q': self.q,
+                'vol': self.vol,  # <-- вот теперь это realised vol
+                'strikes': self.strikes,
+                'mid_prices_call': self.mid_prices_call,
+                'mid_prices_put': self.mid_prices_put
+            })
             for o in orders:
                 K = o.get('strike')
                 opt_type = o.get('option_type', 'call')
