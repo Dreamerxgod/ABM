@@ -1,7 +1,9 @@
 class OptionsOrderBook:
-    def __init__(self, initial_price=1.0):
-        self.bids = [] # (price, qty, agent_id)
-        self.asks = []
+    def __init__(self, strike, option_type, initial_price=1.0):
+        self.strike = strike
+        self.option_type = option_type
+        self.bids = []  # (price, qty, agent_id)
+        self.asks = []  # (price, qty, agent_id)
         self.last_price = initial_price
         self.trades = []
         self.agents = {}
@@ -33,6 +35,7 @@ class OptionsOrderBook:
             ask_price, ask_qty, ask_agent = self.asks[0]
 
             if bid_agent == ask_agent:
+                # self-cross skip
                 if bid_qty <= ask_qty:
                     self.bids.pop(0)
                 else:
@@ -40,10 +43,15 @@ class OptionsOrderBook:
                 continue
 
             trade_qty = min(bid_qty, ask_qty)
+            # обновляем inventory ТОЛЬКО если агент это market maker (hasattr inventory)
             for agent_id, delta in [(bid_agent, +trade_qty), (ask_agent, -trade_qty)]:
                 agent_obj = self.agents.get(agent_id)
-                if agent_obj is not None and hasattr(agent_obj, "inventory"):
-                    agent_obj.inventory += delta
+                if agent_obj is not None:
+                    if hasattr(agent_obj, "inventory_by_option"):
+                        key = (self.strike, self.option_type)
+                        agent_obj.inventory_by_option[key] = agent_obj.inventory_by_option.get(key, 0) + delta
+                    if hasattr(agent_obj, "inventory"):
+                        agent_obj.inventory += delta
 
             trade_price = (bid_price + ask_price) / 2
 
@@ -66,6 +74,7 @@ class OptionsOrderBook:
 
             self.last_price = trade_price
 
+        # после цикла добавляем все сделки в общий список
         self.trades.extend(trades)
         return trades
 
