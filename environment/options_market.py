@@ -46,7 +46,6 @@ class OptionsMarket:
                 # ob.last_price = max(theo, 0.0001)
 
         for agent in agents:
-            # в опционном рынке проще: каждый шаг агент обновляет котировки/желания
             for K_books in self.order_books.values():
                 for ob in K_books.values():
                     ob.cancel_orders_for_agent(agent.id)
@@ -57,7 +56,7 @@ class OptionsMarket:
                                 'mid_prices_put': self.mid_prices_put})
             for o in orders:
                 K = o.get('strike')
-                opt_type = o.get('option_type', 'call')  # ожидаем 'call' или 'put'
+                opt_type = o.get('option_type', 'call')
                 if K not in self.order_books or opt_type not in ['call', 'put']:
                     continue
                 if hasattr(self, 'logger') and self.logger:

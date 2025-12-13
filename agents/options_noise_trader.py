@@ -13,7 +13,7 @@ class OptionsNoiseTrader(Agent):
 
         if ru.choice([True, False]):
             K = ru.choice(strikes)
-            option_type = ru.choice(['call', 'put'])  # выбираем тип опциона
+            option_type = ru.choice(['call', 'put'])
             if option_type == 'call':
                 price = market_state['mid_prices_call'].get(K, 1.0) * (1 + ru.uniform(-self.noise, self.noise))
             else:

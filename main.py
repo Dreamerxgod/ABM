@@ -111,7 +111,6 @@ def main():
         print(f"[Time {t}] News: {market.news:.2f}")
         print(f"Mid price: {market.mid_price:.2f}\n")
 
-        # добавляем время в сделки и копим их
         for tr in step_trades:
             tr['time'] = t
         trades.extend(step_trades)
@@ -131,19 +130,15 @@ def main():
 
         option_trades.extend(opt_trades)
 
-        # затем внутри цикла:
         for tr in opt_trades:
-            logger.log_option_trade(t, tr)  # экземпляр logger, а не класс
+            logger.log_option_trade(t, tr)
 
 
 
-    # график
     plot_price_series(price_history)
-    # график опционов
     plot_options_prices(option_price_history_call, strikes=cfg.OPTION_STRIKES, title='Call Options Prices')
     plot_options_prices(option_price_history_put, strikes=cfg.OPTION_STRIKES, title='Put Options Prices')
 
-    # CSV
     file_io.save_price_history('price_history.csv', price_history)
     file_io.save_trades('trades.csv', trades)
     file_io.save_trades('option_trades.csv', option_trades)

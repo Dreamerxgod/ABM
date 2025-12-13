@@ -13,7 +13,6 @@ class Logger:
         self.enable_console = enable_console
         os.makedirs(os.path.dirname(self.trades_file), exist_ok=True)
 
-        # заголовок CSV
         with open(self.trades_file.replace(".csv", "_options.csv"), "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["time", "price", "qty", "buyer", "seller", "instrument", "strike", "option_type"])
@@ -21,11 +20,9 @@ class Logger:
     def log(self, message: str):
         timestamp = datetime.now().strftime("%H:%M:%S")
 
-        # в файл .log
         with open(self.events_file, "a") as f:
             f.write(f"[{timestamp}] {message}\n")
 
-        # optionally выводить в консоль
         if self.enable_console:
             print(f"[{timestamp}] {message}")
 

@@ -69,7 +69,7 @@ class OptionsOrderBook:
 
         # после цикла добавляем все сделки в общий список
         self.trades.extend(trades)
-        return trades  # <- теперь возвращается всегда
+        return trades
 
     def get_mid_price(self, last_price=1.0):
         if self.bids and self.asks:

@@ -5,7 +5,7 @@ from utils.bs_utils import bs_price
 class OptionsMarketMaker(Agent):
     def __init__(self, id, base_spread_factor=cfg.OPTION_SPREAD_FACTOR, base_size=1):
         super().__init__(id)
-        self.inventory = 0  # <-- добавь
+        self.inventory = 0
         self.base_spread_factor = base_spread_factor
         self.base_size = base_size
 
