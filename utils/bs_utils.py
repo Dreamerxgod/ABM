@@ -66,16 +66,11 @@ def bs_theta(S, K, r, q, sigma, T, option_type='call'):
 
 def implied_volatility(price, S, K, r, q, T, option_type='call',
                        sigma_low=1e-4, sigma_high=5.0, tol=1e-6, max_iter=100):
-    """
-    Находит implied vol по цене опциона (mid) методом бисекции.
-    Возвращает float или None если цена вне арбитражных границ.
-    """
     if price is None or price <= 0 or S <= 0 or K <= 0:
         return None
     if T <= 0:
         return None
 
-    # арбитражные нижние/верхние границы
     disc_q = math.exp(-q * T)
     disc_r = math.exp(-r * T)
 
@@ -86,11 +81,9 @@ def implied_volatility(price, S, K, r, q, T, option_type='call',
         lower = max(0.0, K * disc_r - S * disc_q)
         upper = K * disc_r
 
-    # если цена вне допустимого диапазона — IV не определена
     if price < lower - 1e-12 or price > upper + 1e-12:
         return None
 
-    # бисекция по sigma
     lo, hi = sigma_low, sigma_high
     for _ in range(max_iter):
         mid = 0.5 * (lo + hi)
@@ -103,8 +96,8 @@ def implied_volatility(price, S, K, r, q, T, option_type='call',
             lo = mid
     return 0.5 * (lo + hi)
 
+# что б безопасно было считать mean
 def safe_mean(values):
-    """Среднее по списку, игнорируя None/NaN. Возвращает None если данных нет."""
     xs = []
     for v in values:
         if v is None:
@@ -119,15 +112,10 @@ def safe_mean(values):
 
 
 def mean_realised_vol(rv_history):
-    """Средняя realised vol по времени (игнорируя None)."""
     return safe_mean(rv_history)
 
 
 def mean_implied_vol_overall(iv_history):
-    """
-    Средняя implied vol по всем страйкам и по всем шагам.
-    iv_history: list[dict[K -> iv]]
-    """
     vals = []
     for step in iv_history:
         if not step:
@@ -138,10 +126,6 @@ def mean_implied_vol_overall(iv_history):
 
 
 def mean_implied_vol_by_strike(iv_history, strikes):
-    """
-    Средняя implied vol по каждому страйку.
-    Возвращает dict[K -> mean_iv]
-    """
     out = {}
     for K in strikes:
         vals = []
@@ -154,14 +138,6 @@ def mean_implied_vol_by_strike(iv_history, strikes):
 
 
 def iv_rv_summary(rv_history, iv_history_call, iv_history_put, strikes=None):
-    """
-    Возвращает словарь со сводкой:
-      - mean_rv
-      - mean_iv_call (overall)
-      - mean_iv_put  (overall)
-      - mean_iv_call_by_strike (если strikes задан)
-      - mean_iv_put_by_strike  (если strikes задан)
-    """
     summary = {
         "mean_rv": mean_realised_vol(rv_history),
         "mean_iv_call": mean_implied_vol_overall(iv_history_call),
@@ -176,15 +152,11 @@ def iv_rv_summary(rv_history, iv_history_call, iv_history_put, strikes=None):
 
 
 def print_iv_rv_summary(rv_history, iv_history_call, iv_history_put, strikes=None, precision=4):
-    """
-    Печатает красивую сводку в консоль.
-    """
     s = iv_rv_summary(rv_history, iv_history_call, iv_history_put, strikes=strikes)
 
     def fmt(x):
         return "None" if x is None else f"{x:.{precision}f}"
 
-    print("\n==== IV / RV SUMMARY ====")
     print(f"Mean realised vol:          {fmt(s['mean_rv'])}")
     print(f"Mean implied vol (calls):   {fmt(s['mean_iv_call'])}")
     print(f"Mean implied vol (puts):    {fmt(s['mean_iv_put'])}")
@@ -198,5 +170,4 @@ def print_iv_rv_summary(rv_history, iv_history_call, iv_history_put, strikes=Non
         for K in strikes:
             print(f"  K={K}: {fmt(s['mean_iv_put_by_strike'].get(K))}")
 
-    print("=========================\n")
     return s

@@ -4,7 +4,6 @@ from agents.informed_trader import InformedTrader
 from agents.fundamental import FundamentalTrader
 from utils.plotting import plot_price_series
 from utils.plotting import plot_options_prices
-from environment.news_process import NewsProcess
 import config as cfg
 from utils import file_io
 from environment.market import Market
@@ -105,15 +104,12 @@ def main():
     iv_history_call = []
     iv_history_put = []
 
-    #logger = Logger(enable_console=True)
-
     for t in range(cfg.WARMUP_STEPS):
         market.step(t, agents)
 
     for t in range(cfg.WARMUP_STEPS, cfg.WARMUP_STEPS + cfg.NUM_STEPS):
         step_trades = market.step(t, agents)
 
-        # лог/дебаг
         print(f"[Time {t}] News: {market.news:.2f}")
         print(f"Mid price: {market.mid_price:.2f}\n")
 

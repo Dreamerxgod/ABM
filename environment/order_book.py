@@ -41,7 +41,6 @@ class OrderBook:
             trade_qty = min(bid_qty, ask_qty)
             trade_price = (bid_price + ask_price) / 2
 
-            # ОБНОВЛЯЕМ inventory ТОЛЬКО если агент market maker
             for agent_id, delta in [(bid_agent, +trade_qty), (ask_agent, -trade_qty)]:
                 agent = self.agents.get(agent_id)
                 if agent and hasattr(agent, "inventory"):

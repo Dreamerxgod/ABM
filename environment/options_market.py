@@ -42,12 +42,10 @@ class OptionsMarket:
             vol = float(vol)
             self.vol = vol
 
-            # пересчитать теоретические цены и обновить book.mid (market makers будут размещать ордера в act)
         for K in self.strikes:
             for opt_type in ['call', 'put']:
                 theo = self.theoretical_price(S, K, option_type=opt_type)
                 ob = self.order_books[K][opt_type]
-                # ob.last_price = max(theo, 0.0001)
 
         for agent in agents:
             for K_books in self.order_books.values():
@@ -59,7 +57,7 @@ class OptionsMarket:
                 'tau': self.tau,
                 'r': self.r,
                 'q': self.q,
-                'vol': self.vol,  # <-- вот теперь это realised vol
+                'vol': self.vol,
                 'strikes': self.strikes,
                 'mid_prices_call': self.mid_prices_call,
                 'mid_prices_put': self.mid_prices_put

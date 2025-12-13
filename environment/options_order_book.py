@@ -40,7 +40,6 @@ class OptionsOrderBook:
                 continue
 
             trade_qty = min(bid_qty, ask_qty)
-            # обновляем inventory ТОЛЬКО если агент это market maker (hasattr inventory)
             for agent_id, delta in [(bid_agent, +trade_qty), (ask_agent, -trade_qty)]:
                 agent_obj = self.agents.get(agent_id)
                 if agent_obj is not None and hasattr(agent_obj, "inventory"):
@@ -67,7 +66,6 @@ class OptionsOrderBook:
 
             self.last_price = trade_price
 
-        # после цикла добавляем все сделки в общий список
         self.trades.extend(trades)
         return trades
 

@@ -38,16 +38,11 @@ def plot_realised_vol(rv_history, rv_avg, title="Realised Vol"):
     plt.show()
 
 def plot_implied_vol_series(iv_history, strikes, title="Implied Volatility"):
-    """
-    iv_history: список словарей {K: iv} на каждом шаге
-    strikes: список страйков
-    """
     import matplotlib.pyplot as plt
 
     plt.figure(figsize=(12, 5))
     for K in strikes:
         series = [step.get(K, float("nan")) for step in iv_history]
-        # None -> nan
         series = [x if x is not None else float("nan") for x in series]
         plt.plot(series, label=f"K={K}")
 

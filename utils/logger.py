@@ -1,5 +1,4 @@
 import csv
-import json
 from datetime import datetime
 import os
 
@@ -72,9 +71,9 @@ class Logger:
                 trade.get("qty", 0),
                 trade.get("buyer", ""),
                 trade.get("seller", ""),
-                trade.get("instrument", ""),  # будет 'option'
+                trade.get("instrument", ""),
                 trade.get("strike", ""),
-                trade.get("option_type", "")  # call/put
+                trade.get("option_type", "")
             ])
 
         if self.enable_console:

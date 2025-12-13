@@ -1,9 +1,6 @@
 import math
 
 def realised_vol_last(prices, lookback=200, annualization=252):
-    """
-    Возвращает realised vol только для последнего шага (или None если данных мало).
-    """
     n = len(prices)
     if n < 3:
         return None
@@ -25,10 +22,6 @@ def realised_vol_last(prices, lookback=200, annualization=252):
     return math.sqrt(max(var, 0.0)) * math.sqrt(annualization)
 
 def rolling_mean(series, window=200):
-    """
-    series: список чисел или None
-    возвращает rolling mean (None пока мало данных)
-    """
     out = [None] * len(series)
     for t in range(len(series)):
         start = max(0, t - window + 1)
