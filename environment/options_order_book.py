@@ -40,7 +40,13 @@ class OptionsOrderBook:
                 continue
 
             trade_qty = min(bid_qty, ask_qty)
-            trade_price = ask_price
+            # обновляем inventory ТОЛЬКО если агент это market maker (hasattr inventory)
+            for agent_id, delta in [(bid_agent, +trade_qty), (ask_agent, -trade_qty)]:
+                agent_obj = self.agents.get(agent_id)
+                if agent_obj is not None and hasattr(agent_obj, "inventory"):
+                    agent_obj.inventory += delta
+
+            trade_price = (bid_price + ask_price) / 2
 
             trades.append({
                 'price': trade_price,

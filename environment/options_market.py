@@ -43,15 +43,13 @@ class OptionsMarket:
             for opt_type in ['call', 'put']:
                 theo = self.theoretical_price(S, K, option_type=opt_type)
                 ob = self.order_books[K][opt_type]
-                ob.last_price = max(theo, 0.0001)
+                # ob.last_price = max(theo, 0.0001)
 
-        # выполнить действия агентов
         for agent in agents:
-            if hasattr(agent, 'inventory'):
-                # убрать старые заявки
-                for K_books in self.order_books.values():
-                    for ob in K_books.values():
-                        ob.cancel_orders_for_agent(agent.id)
+            # в опционном рынке проще: каждый шаг агент обновляет котировки/желания
+            for K_books in self.order_books.values():
+                for ob in K_books.values():
+                    ob.cancel_orders_for_agent(agent.id)
 
             orders = agent.act({'spot': S, 'tau': self.tau, 'r': self.r, 'q': self.q, 'vol': self.vol,
                                 'strikes': self.strikes,
