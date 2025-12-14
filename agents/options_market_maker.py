@@ -14,7 +14,14 @@ class OptionsMarketMaker(Agent):
         self.base_spread_factor = base_spread_factor
         self.base_size = base_size
         self.hedge_aggressiveness = hedge_aggressiveness
-        self.max_spot_inventory = 50
+        self.max_spot_inventory = 1000
+        self.pnl_option = 0.0
+        self.pnl_hedge = 0.0
+        self.total_pnl = 0.0
+        self.pnl_history = []
+
+        self.prev_option_prices = {}
+        self.prev_spot_price = None
 
     def act(self, market_state):
         S = market_state['spot']
@@ -29,16 +36,20 @@ class OptionsMarketMaker(Agent):
             for option_type in ['call', 'put']:
                 theo = bs_price(S, K, r, q, vol, tau, option_type=option_type)
                 theo = max(float(theo), 0.0001)
-                spread = max(0.0001, self.base_spread_factor * theo)
+                theo = max(float(theo), cfg.MIN_OPTION_PRICE)
 
-                bid = max(0.0001, theo - spread / 2)
-                ask = theo + spread / 2
+                spread = max(cfg.MIN_OPTION_PRICE, self.base_spread_factor * theo)
+                # заметил что они иногда по 0 торгуют и сделал такую затычку
+                bid = max(cfg.MIN_OPTION_PRICE, theo - spread / 2)
+                ask = max(cfg.MIN_OPTION_PRICE, theo + spread / 2)
+
+
                 qty = float(ru.uniform(1, 3))
 
                 long_limit_hit = self.inventory >= self.max_spot_inventory
                 short_limit_hit = self.inventory <= -self.max_spot_inventory
 
-                if not long_limit_hit:
+                if not long_limit_hit and not bid == 0.10:
                     orders.append({
                         'agent_id': self.id,
                         'instrument': 'option',
@@ -50,7 +61,7 @@ class OptionsMarketMaker(Agent):
                         'option_type': option_type,
                     })
 
-                if not short_limit_hit:
+                if not short_limit_hit and not ask == 0.10:
                     orders.append({
                         'agent_id': self.id,
                         'instrument': 'option',
