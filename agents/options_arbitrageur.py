@@ -28,9 +28,6 @@ class OptionsArbitrageur(Agent):
 
             if C_market is None or P_market is None:
                 continue
-            # заметил что они иногда по 0 торгуют и сделал такую затычку
-            C_market = max(C_market, cfg.MIN_OPTION_PRICE)
-            P_market = max(P_market, cfg.MIN_OPTION_PRICE)
 
             C_theo = bs_price(S, K, r, q, vol, tau, option_type='call')
             P_theo = bs_price(S, K, r, q, vol, tau, option_type='put')

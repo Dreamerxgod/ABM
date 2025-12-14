@@ -52,3 +52,59 @@ def plot_implied_vol_series(iv_history, strikes, title="Implied Volatility"):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+def plot_series(series, title="", ylabel="value"):
+    xs = list(range(len(series)))
+    ys = [v if v is not None else float("nan") for v in series]
+    plt.figure()
+    plt.plot(xs, ys)
+    plt.title(title)
+    plt.xlabel("t")
+    plt.ylabel(ylabel)
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+def plot_binary_regime(regime, title="Regime"):
+    xs = list(range(len(regime)))
+    ys = [int(v) for v in regime]
+    plt.figure()
+    plt.step(xs, ys, where="post")
+    plt.ylim(-0.1, 1.1)
+    plt.title(title)
+    plt.xlabel("t")
+    plt.ylabel("active (0/1)")
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+def plot_scatter(x, y, title="", xlabel="x", ylabel="y", alpha=0.4):
+    xs, ys = [], []
+    for a, b in zip(x, y):
+        if a is None or b is None:
+            continue
+        xs.append(float(a))
+        ys.append(float(b))
+
+    plt.figure(figsize=(6, 5))
+    plt.scatter(xs, ys, alpha=alpha, s=10)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.grid(alpha=0.3)
+    plt.show()
+
+def plot_two_regimes(series, idx_high, idx_low, title="", ylabel="value"):
+    high = [series[t] if t in idx_high else None for t in range(len(series))]
+    low  = [series[t] if t in idx_low  else None for t in range(len(series))]
+
+    high_plot = [v if v is not None else float("nan") for v in high]
+    low_plot  = [v if v is not None else float("nan") for v in low]
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(high_plot, label="High news impact", alpha=0.85)
+    plt.plot(low_plot,  label="Low news impact",  alpha=0.85)
+    plt.title(title)
+    plt.ylabel(ylabel)
+    plt.xlabel("t")
+    plt.legend()
+    plt.grid(alpha=0.3)
+    plt.show()

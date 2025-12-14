@@ -71,7 +71,6 @@ def implied_volatility(price, S, K, r, q, T, option_type='call',
     if T <= 0:
         return None
 
-
     lo, hi = sigma_low, sigma_high
     for _ in range(max_iter):
         mid = 0.5 * (lo + hi)
