@@ -23,7 +23,7 @@ def bs_price(S, K, r, q, sigma, T, option_type='call'):
     D2 = D1 - sigma * math.sqrt(T)
     if option_type == 'call':
         return S * math.exp(-q*T) * norm.cdf(D1) - K * math.exp(-r*T) * norm.cdf(D2)
-    else:  # put
+    else:
         return K * math.exp(-r*T) * norm.cdf(-D2) - S * math.exp(-q*T) * norm.cdf(-D1)
 
 def bs_delta(S, K, r, q, sigma, T, option_type='call'):
@@ -71,18 +71,6 @@ def implied_volatility(price, S, K, r, q, T, option_type='call',
     if T <= 0:
         return None
 
-    disc_q = math.exp(-q * T)
-    disc_r = math.exp(-r * T)
-
-    if option_type == 'call':
-        lower = max(0.0, S * disc_q - K * disc_r)
-        upper = S * disc_q
-    else:
-        lower = max(0.0, K * disc_r - S * disc_q)
-        upper = K * disc_r
-
-    if price < lower - 1e-12 or price > upper + 1e-12:
-        return None
 
     lo, hi = sigma_low, sigma_high
     for _ in range(max_iter):
