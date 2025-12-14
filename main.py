@@ -103,6 +103,7 @@ def main():
     rv_history = []
     iv_history_call = []
     iv_history_put = []
+    news_history = []
 
     for t in range(cfg.WARMUP_STEPS):
         market.step(t, agents)
@@ -119,6 +120,7 @@ def main():
 
         S = market.mid_price
         price_history.append(S)
+        news_history.append(float(market.news))
 
         rv = realised_vol_last(price_history, lookback=200, annualization=252)
         rv_history.append(rv)
@@ -179,9 +181,18 @@ def main():
     plot_options_prices(option_price_history_call, strikes=cfg.OPTION_STRIKES, title='Call Options Prices')
     plot_options_prices(option_price_history_put, strikes=cfg.OPTION_STRIKES, title='Put Options Prices')
 
+
     file_io.save_price_history('price_history.csv', price_history)
     file_io.save_trades('trades.csv', trades)
     file_io.save_trades('option_trades.csv', option_trades)
+
+    file_io.save_wide_series_csv('option_mid_call.csv', option_price_history_call, index_name='t')
+    file_io.save_wide_series_csv('option_mid_put.csv', option_price_history_put, index_name='t')
+
+    file_io.save_wide_series_csv('iv_call.csv', iv_history_call, index_name='t')
+    file_io.save_wide_series_csv('iv_put.csv', iv_history_put, index_name='t')
+
+    file_io.save_series_csv("news_history.csv", news_history, colname="news")
 
 
 if __name__ == "__main__":

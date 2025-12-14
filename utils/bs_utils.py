@@ -71,19 +71,6 @@ def implied_volatility(price, S, K, r, q, T, option_type='call',
     if T <= 0:
         return None
 
-    disc_q = math.exp(-q * T)
-    disc_r = math.exp(-r * T)
-
-    if option_type == 'call':
-        lower = max(0.0, S * disc_q - K * disc_r)
-        upper = S * disc_q
-    else:
-        lower = max(0.0, K * disc_r - S * disc_q)
-        upper = K * disc_r
-
-    if price < lower - 1e-12 or price > upper + 1e-12:
-        return None
-
     lo, hi = sigma_low, sigma_high
     for _ in range(max_iter):
         mid = 0.5 * (lo + hi)
