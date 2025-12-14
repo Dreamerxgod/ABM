@@ -59,7 +59,7 @@ class Logger:
         self.log(
             f"[ORDER t={t}] "
             f"{trader_type}({order['agent_id']}) {order['side']} "
-            f"p={order['price']:.2f} qty={order['qty']}{inv_str}{trend_str}"
+            f"p={order['price']:.4f} qty={order['qty']}{inv_str}{trend_str}"
         )
 
     def log_option_trade(self, t, trade):
@@ -86,7 +86,7 @@ class Logger:
         trader_type = agent.__class__.__name__ if agent else "Unknown"
         self.log(
             f"[OPTION ORDER t={t}] {trader_type}({order['agent_id']}) "
-            f"{order['side']} p={order['price']:.2f} qty={order['qty']} "
+            f"{order['side']} p={order['price']:.4f} qty={order['qty']} "
             f"K={order.get('strike')} "
             f"order_type={order.get('order_type')} option_type={order.get('option_type')}"
         )
