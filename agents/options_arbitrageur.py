@@ -40,7 +40,7 @@ class OptionsArbitrageur(Agent):
 
             parity_diff = (C_market - P_market) - (S * math.exp(-q * tau) - K * math.exp(-r * tau))
 
-            if abs(parity_diff) > self.threshold and not C_market == 0.1 and not P_market == 0.1:
+            if abs(parity_diff) > self.threshold:
                 if parity_diff > 0:
                     # call слишком дорогой относительно put
                     orders.append({
@@ -64,27 +64,25 @@ class OptionsArbitrageur(Agent):
                         'option_type': 'put'
                     })
                 else:
-                    if not C_market == 0.1 and not P_market == 0.1:
-                        # call слишком дешёвый относительно put
-                        orders.append({
-                            'agent_id': self.id,
-                            'instrument': 'option',
-                            'order_type': 'limit',
-                            'side': 'buy',
-                            'price': float(C_market),
-                            'qty': int(self.max_qty),
-                            'strike': K,
-                            'option_type': 'call'
-                        })
-                        orders.append({
-                            'agent_id': self.id,
-                            'instrument': 'option',
-                            'order_type': 'limit',
-                            'side': 'sell',
-                            'price': float(P_market),
-                            'qty': int(self.max_qty),
-                            'strike': K,
-                            'option_type': 'put'
+                    orders.append({
+                        'agent_id': self.id,
+                        'instrument': 'option',
+                        'order_type': 'limit',
+                        'side': 'buy',
+                        'price': float(C_market),
+                        'qty': int(self.max_qty),
+                        'strike': K,
+                        'option_type': 'call'
                     })
+                    orders.append({
+                        'agent_id': self.id,
+                        'instrument': 'option',
+                        'order_type': 'limit',
+                        'side': 'sell',
+                        'price': float(P_market),
+                        'qty': int(self.max_qty),
+                        'strike': K,
+                        'option_type': 'put'
+                })
 
         return orders
