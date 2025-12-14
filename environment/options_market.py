@@ -33,8 +33,8 @@ class OptionsMarket:
 
     def set_agents(self, agents):
         self.agents = {a.id: a for a in agents}
-        for K_books in self.order_books.values():  # K_books = {'call': ..., 'put': ...}
-            for ob in K_books.values():  # ob = OptionsOrderBook
+        for K_books in self.order_books.values():  
+            for ob in K_books.values():  
                 ob.agents = self.agents
 
     def theoretical_price(self, S, K, option_type='call'):
