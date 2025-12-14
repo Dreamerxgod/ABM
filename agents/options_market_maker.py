@@ -14,7 +14,7 @@ class OptionsMarketMaker(Agent):
         self.base_spread_factor = base_spread_factor
         self.base_size = base_size
         self.hedge_aggressiveness = hedge_aggressiveness
-        self.max_spot_inventory = 1000
+        self.max_spot_inventory = 50
         self.pnl_option = 0.0
         self.pnl_hedge = 0.0
         self.total_pnl = 0.0
