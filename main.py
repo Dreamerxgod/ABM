@@ -129,7 +129,8 @@ def main():
             t=t,
             S=S,
             agents=options_agents,
-            vol=vol_for_options
+            vol=vol_for_options,
+            spot_order_book = market.order_book
         )
 
         option_price_history_call.append(options_market.mid_prices_call.copy())
