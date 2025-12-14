@@ -101,7 +101,7 @@ class OptionsMarket:
             self.mid_prices_call[K] = max(self.mid_prices_call[K], 0.0001)
             self.mid_prices_put[K] = max(self.mid_prices_put[K], 0.0001)
 
-        if spot_order_book is not None:
+        if spot_order_book is not None and t % cfg.DELTA_HEDGE_INTERVAL == 0:
             for agent in agents:
                 inv_map = getattr(agent, "inventory_by_option", None)
                 if not inv_map:
