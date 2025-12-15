@@ -36,12 +36,12 @@ class OptionsMarketMaker(Agent):
             for option_type in ['call', 'put']:
                 theo = bs_price(S, K, r, q, vol, tau, option_type=option_type)
                 theo = max(float(theo), 0.0001)
-                theo = max(float(theo), cfg.MIN_OPTION_PRICE)
 
-                spread = max(cfg.MIN_OPTION_PRICE, self.base_spread_factor * theo)
-                # заметил что они иногда по 0 торгуют и сделал такую затычку
-                bid = max(cfg.MIN_OPTION_PRICE, theo - spread / 2)
-                ask = max(cfg.MIN_OPTION_PRICE, theo + spread / 2)
+
+                spread = self.base_spread_factor * theo
+
+                bid = theo - spread / 2
+                ask = theo + spread / 2
 
 
                 qty = float(ru.uniform(1, 3))
@@ -49,7 +49,7 @@ class OptionsMarketMaker(Agent):
                 long_limit_hit = self.inventory >= self.max_spot_inventory
                 short_limit_hit = self.inventory <= -self.max_spot_inventory
 
-                if not long_limit_hit and not bid == 0.10:
+                if not long_limit_hit:
                     orders.append({
                         'agent_id': self.id,
                         'instrument': 'option',
@@ -61,7 +61,7 @@ class OptionsMarketMaker(Agent):
                         'option_type': option_type,
                     })
 
-                if not short_limit_hit and not ask == 0.10:
+                if not short_limit_hit:
                     orders.append({
                         'agent_id': self.id,
                         'instrument': 'option',
